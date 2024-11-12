@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet Map with UK Boundary</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 500px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/aparshin/leaflet-boundary-canvas@f00b4d35/src/BoundaryCanvas.js"></script>
+
+<script>
+    // Initialize the Leaflet map
+    var map = L.map("map");
+
+    // Load the UK boundary GeoJSON data
+    fetch('https://cdn.jsdelivr.net/gh/johan/world.geo.json@34c96bba/countries/GBR.geo.json')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+            return response.json();
+        })
+        .then(geoJSON => {
+            // Add OSM tiles with BoundaryCanvas, limited to the UK boundary
+            var osm = new L.TileLayer.BoundaryCanvas("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                boundary: geoJSON,
+                attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors, UK shape from <a href="https://github.com/johan/world.geo.json">johan/word.geo.json</a>'
+            });
+            map.addLayer(osm);
+
+            // Create a geoJSON layer for the UK boundary and fit map bounds to it
+            var ukLayer = L.geoJSON(geoJSON);
+            map.fitBounds(ukLayer.getBounds());
+        })
+        .catch(error => {
+            console.error("Failed to load GeoJSON data:", error);
+        });
+</script>
+
+</body>
+</html>
